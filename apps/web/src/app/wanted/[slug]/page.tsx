@@ -122,11 +122,19 @@ export default function BuyRequestDetailPage() {
                     <dt className="text-muted-foreground">
                       {t('wanted.newBudget', { defaultValue: 'Your maximum price' })}
                     </dt>
-                    <dd>{budget ? `${budget.amount} ${budget.currency}` : '—'}</dd>
+                    <dd>
+                      {budget
+                        ? `${budget.amount} ${getPaymentCoinDisplayLabel(budget.currency) || budget.currency}`
+                        : '—'}
+                    </dd>
                     <dt className="text-muted-foreground">
                       {t('wanted.newCurrencies', { defaultValue: 'Accepted currencies' })}
                     </dt>
-                    <dd>{request.acceptedCurrencies.join(', ')}</dd>
+                    <dd>
+                      {request.acceptedCurrencies
+                        .map(code => getPaymentCoinDisplayLabel(code) || code)
+                        .join(', ')}
+                    </dd>
                     <dt className="text-muted-foreground">
                       {t('wanted.newDeliverTo', { defaultValue: 'Deliver to' })}
                     </dt>
@@ -221,7 +229,8 @@ function OfferRow({
         <div className="flex items-start justify-between gap-3">
           <div className="flex flex-col gap-1">
             <span className="font-semibold">
-              {offer.unitPrice.amount} {offer.unitPrice.currency}
+              {offer.unitPrice.amount}{' '}
+              {getPaymentCoinDisplayLabel(offer.unitPrice.currency) || offer.unitPrice.currency}
             </span>
             <span className="text-xs text-muted-foreground">
               {shortPeer(offer.sellerID.peerID)}

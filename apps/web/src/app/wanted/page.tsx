@@ -20,6 +20,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useBuyRequests, useI18n } from '@mobazha/core';
+import { getPaymentCoinDisplayLabel } from '@mobazha/core/data/tokens';
 import type { BuyRequest } from '@mobazha/core';
 
 const ALL_CATEGORIES = '__all__';
@@ -146,7 +147,9 @@ function BuyRequestCard({ request }: { request: BuyRequest }) {
             </dd>
             <dt>{t('wanted.newBudget', { defaultValue: 'Your maximum price' })}</dt>
             <dd className="text-right text-foreground">
-              {budget ? `${budget.amount} ${budget.currency}` : '—'}
+              {budget
+                ? `${budget.amount} ${getPaymentCoinDisplayLabel(budget.currency) || budget.currency}`
+                : '—'}
             </dd>
             <dt>{t('wanted.newDeliverTo', { defaultValue: 'Deliver to' })}</dt>
             <dd className="text-right text-foreground">{request.deliverTo || '—'}</dd>
