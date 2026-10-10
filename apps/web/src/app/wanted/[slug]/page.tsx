@@ -1,9 +1,10 @@
 // SPDX-License-Identifier: MPL-2.0
 // Copyright (c) 2026 fengzie and the respective contributors.
+/* global HTMLParagraphElement */
 
 'use client';
 
-import { type FormEvent, useState } from 'react';
+import { type FormEvent, useEffect, useRef, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { Header, Footer } from '@/components';
 import { Container } from '@/components/layouts';
@@ -37,6 +38,52 @@ import {
   useUserStore,
 } from '@mobazha/core';
 import type { BuyRequestComment, BuyRequestOffer } from '@mobazha/core';
+
+/**
+ * A request description, folded on small screens when it does not fit.
+ *
+ * The clamp is measured rather than guessed: the toggle only appears when
+ * the rendered text is actually taller than the box showing it.
+ */
+function RequestDescription({ text }: { text: string }) {
+  const { t } = useI18n();
+  const [expanded, setExpanded] = useState(false);
+  const [overflowing, setOverflowing] = useState(false);
+  const bodyRef = useRef<HTMLParagraphElement>(null);
+
+  useEffect(() => {
+    const measure = () => {
+      const el = bodyRef.current;
+      if (!el) return;
+      setOverflowing(el.scrollHeight > el.clientHeight + 1);
+    };
+    measure();
+    window.addEventListener('resize', measure);
+    return () => window.removeEventListener('resize', measure);
+  }, [text, expanded]);
+
+  return (
+    <div className="flex flex-col gap-1">
+      <p
+        ref={bodyRef}
+        className={`whitespace-pre-line text-sm leading-relaxed text-muted-foreground ${
+          expanded ? '' : 'line-clamp-4 sm:line-clamp-none'
+        }`}
+      >
+        {text}
+      </p>
+      {(overflowing || expanded) && (
+        <button
+          type="button"
+          onClick={() => setExpanded(value => !value)}
+          className="self-start text-sm font-medium text-primary hover:underline"
+        >
+          {expanded ? t('common.collapse') : t('common.expand')}
+        </button>
+      )}
+    </div>
+  );
+}
 
 const OPEN_STATUS = 'open';
 
@@ -104,12 +151,10 @@ export default function BuyRequestDetailPage() {
             <div className="flex flex-col gap-6">
               <div className="flex flex-col gap-3">
                 <div className="flex items-start justify-between gap-3">
-                  <h1 className="text-3xl font-bold">{request.title}</h1>
+                  <h1 className="text-2xl font-bold break-words sm:text-3xl">{request.title}</h1>
                   <BuyRequestStatusBadge status={request.status} />
                 </div>
-                {request.description && (
-                  <p className="text-muted-foreground whitespace-pre-line">{request.description}</p>
-                )}
+                {request.description && <RequestDescription text={request.description} />}
               </div>
 
               {request.images && request.images.length > 0 && (
@@ -131,21 +176,21 @@ export default function BuyRequestDetailPage() {
 
               <Card>
                 <CardContent className="p-6">
-                  <dl className="grid grid-cols-1 gap-x-6 gap-y-4 text-sm sm:grid-cols-2 lg:grid-cols-3">
-                    <div>
+                  <dl className="grid grid-cols-2 gap-2.5 text-sm sm:grid-cols-3 lg:grid-cols-4">
+                    <div className="rounded-lg bg-muted/50 px-3 py-2.5">
                       <dt className="text-xs text-muted-foreground">
                         {t('wanted.newQuantity', { defaultValue: 'How many?' })}
                       </dt>
-                      <dd className="mt-1">
+                      <dd className="mt-0.5 font-medium">
                         {request.quantity}
                         {request.unit ? ` ${request.unit}` : ''}
                       </dd>
                     </div>
-                    <div>
+                    <div className="rounded-lg bg-muted/50 px-3 py-2.5">
                       <dt className="text-xs text-muted-foreground">
                         {t('wanted.newBudget', { defaultValue: 'Your maximum price' })}
                       </dt>
-                      <dd className="mt-1">
+                      <dd className="mt-0.5 font-medium">
                         {budget ? (
                           <span className="inline-flex items-center gap-1.5">
                             <span className="font-medium">{budget.amount}</span>
@@ -157,11 +202,11 @@ export default function BuyRequestDetailPage() {
                         )}
                       </dd>
                     </div>
-                    <div>
+                    <div className="rounded-lg bg-muted/50 px-3 py-2.5">
                       <dt className="text-xs text-muted-foreground">
                         {t('wanted.newCurrencies', { defaultValue: 'Accepted currencies' })}
                       </dt>
-                      <dd className="mt-1">
+                      <dd className="mt-0.5 font-medium">
                         <span className="flex flex-wrap gap-x-3 gap-y-1">
                           {request.acceptedCurrencies.map(code => (
                             <span key={code} className="inline-flex items-center gap-1.5">
@@ -172,17 +217,17 @@ export default function BuyRequestDetailPage() {
                         </span>
                       </dd>
                     </div>
-                    <div>
+                    <div className="rounded-lg bg-muted/50 px-3 py-2.5">
                       <dt className="text-xs text-muted-foreground">
                         {t('wanted.newDeliverTo', { defaultValue: 'Deliver to' })}
                       </dt>
-                      <dd className="mt-1">{request.deliverTo || '—'}</dd>
+                      <dd className="mt-0.5 font-medium">{request.deliverTo || '—'}</dd>
                     </div>
-                    <div>
+                    <div className="rounded-lg bg-muted/50 px-3 py-2.5">
                       <dt className="text-xs text-muted-foreground">
                         {t('wanted.newCategory', { defaultValue: 'Category' })}
                       </dt>
-                      <dd className="mt-1">{request.categorySlug || '—'}</dd>
+                      <dd className="mt-0.5 font-medium">{request.categorySlug || '—'}</dd>
                     </div>
                   </dl>
                 </CardContent>

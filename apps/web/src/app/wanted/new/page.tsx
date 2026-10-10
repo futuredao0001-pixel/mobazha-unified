@@ -25,6 +25,10 @@ import { DEFAULT_WANTED_COIN, WANTED_COINS } from '@/components/wanted/wantedCoi
 import { useCreateBuyRequest, useI18n } from '@mobazha/core';
 import type { CreateBuyRequestRequest, Image } from '@mobazha/core';
 
+/** A buyer hands over a brief, so the title gets room for a full spec. */
+const TITLE_MAX_LENGTH = 250;
+const DESCRIPTION_MAX_LENGTH = 1000;
+
 export default function NewWantedRequestPage() {
   return (
     <AuthGuard>
@@ -114,8 +118,11 @@ function NewWantedRequestForm() {
                     value={title}
                     onChange={event => setTitle(event.target.value)}
                     required
-                    maxLength={140}
+                    maxLength={TITLE_MAX_LENGTH}
                   />
+                  <p className="text-right text-xs text-muted-foreground">
+                    {title.length}/{TITLE_MAX_LENGTH}
+                  </p>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
@@ -246,9 +253,13 @@ function NewWantedRequestForm() {
                     id="wanted-details"
                     value={description}
                     onChange={event => setDescription(event.target.value)}
-                    rows={4}
+                    rows={6}
+                    maxLength={DESCRIPTION_MAX_LENGTH}
                     className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
                   />
+                  <p className="text-right text-xs text-muted-foreground">
+                    {description.length}/{DESCRIPTION_MAX_LENGTH}
+                  </p>
                 </div>
 
                 <BuyRequestImagePicker images={images} onImagesChange={setImages} />
