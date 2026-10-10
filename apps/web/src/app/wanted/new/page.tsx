@@ -20,38 +20,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { TokenIcon } from '@/components/Payment/TokenIcon';
+import { DEFAULT_WANTED_COIN, WANTED_COINS } from '@/components/wanted/wantedCoins';
 import { useCreateBuyRequest, useI18n } from '@mobazha/core';
-import {
-  TOKENS,
-  getPaymentCoinDisplayLabel,
-  isPaymentCoinEnabled,
-} from '@mobazha/core/data/tokens';
 import type { CreateBuyRequestRequest, Image } from '@mobazha/core';
-
-// Settleable coins come from the platform token registry rather than a
-// hand-written list, so the board can only ever quote currencies the node can
-// actually settle. Ordering keeps the native coins first, which is what most
-// buyers reach for.
-const SETTLEABLE_COINS = TOKENS.filter(token => isPaymentCoinEnabled(token.id))
-  .map(token => {
-    const display = getPaymentCoinDisplayLabel(token.id) || token.id;
-    // Stablecoins exist on several chains and share a display label, so the
-    // chain is what makes the options distinguishable in the picker.
-    return {
-      id: token.id,
-      label: display === token.id ? display : `${display} · ${token.chain}`,
-    };
-  })
-  .filter((coin, index, all) => all.findIndex(c => c.id === coin.id) === index)
-  .sort((a, b) => {
-    const aNative = a.id === a.label ? 0 : 1;
-    const bNative = b.id === b.label ? 0 : 1;
-    if (aNative !== bNative) return aNative - bNative;
-    return a.id.localeCompare(b.id);
-  });
-
-const DEFAULT_COIN =
-  SETTLEABLE_COINS.find(c => c.id === 'ETHUSDT')?.id ?? SETTLEABLE_COINS[0]?.id ?? 'BTC';
 
 export default function NewWantedRequestPage() {
   return (
@@ -69,7 +41,7 @@ function NewWantedRequestForm() {
   const [title, setTitle] = useState('');
   const [quantity, setQuantity] = useState('1');
   const [budgetAmount, setBudgetAmount] = useState('');
-  const [budgetCurrency, setBudgetCurrency] = useState(DEFAULT_COIN);
+  const [budgetCurrency, setBudgetCurrency] = useState(DEFAULT_WANTED_COIN);
   const [alsoAccept, setAlsoAccept] = useState<string[]>([]);
   const [expiresInDays, setExpiresInDays] = useState('7');
   const [deliverTo, setDeliverTo] = useState('');
@@ -196,9 +168,12 @@ function NewWantedRequestForm() {
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        {SETTLEABLE_COINS.map(coin => (
+                        {WANTED_COINS.map(coin => (
                           <SelectItem key={coin.id} value={coin.id}>
-                            {coin.label}
+                            <span className="flex items-center gap-2">
+                              <TokenIcon token={coin.id} size={16} />
+                              {coin.label}
+                            </span>
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -210,8 +185,8 @@ function NewWantedRequestForm() {
                   <Label>
                     {t('wanted.newCurrencies', { defaultValue: 'Accepted currencies' })}
                   </Label>
-                  <div className="max-h-48 overflow-y-auto rounded-md border border-input p-3 flex flex-wrap gap-2">
-                    {SETTLEABLE_COINS.map(coin => {
+                  <div className="flex flex-wrap gap-2 rounded-md border border-input p-3">
+                    {WANTED_COINS.map(coin => {
                       const checked = acceptedCurrencies.includes(coin.id);
                       const locked = coin.id === budgetCurrency;
                       return (
@@ -230,6 +205,7 @@ function NewWantedRequestForm() {
                             disabled={locked}
                             onChange={() => toggleCoin(coin.id)}
                           />
+                          <TokenIcon token={coin.id} size={14} />
                           {coin.label}
                         </label>
                       );

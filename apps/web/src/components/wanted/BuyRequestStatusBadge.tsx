@@ -22,5 +22,11 @@ export function BuyRequestStatusBadge({ status }: { status: BuyRequestStatus }) 
   const { t } = useI18n();
   const entry = STATUS_LABELS[status] ?? STATUS_LABELS.open;
 
-  return <Badge variant={entry.variant}>{t(entry.key, { defaultValue: entry.fallback })}</Badge>;
+  // The pill shares a flex row with the title, so it must never be the item
+  // that wraps: without this a narrow card renders 进行/中 across two lines.
+  return (
+    <Badge variant={entry.variant} className="shrink-0 whitespace-nowrap">
+      {t(entry.key, { defaultValue: entry.fallback })}
+    </Badge>
+  );
 }

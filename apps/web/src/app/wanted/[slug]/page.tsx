@@ -22,6 +22,7 @@ import {
 import { getPaymentCoinDisplayLabel } from '@mobazha/core/data/tokens';
 import { EmptyState } from '@/components/ui/empty-state';
 import { ErrorAlert } from '@/components/ui/error-alert';
+import { TokenIcon } from '@/components/Payment/TokenIcon';
 import { BuyRequestStatusBadge } from '@/components/wanted/BuyRequestStatusBadge';
 import { MessageBuyerButton } from '@/components/wanted/MessageBuyerButton';
 import {
@@ -112,16 +113,16 @@ export default function BuyRequestDetailPage() {
               </div>
 
               {request.images && request.images.length > 0 && (
-                <div className="flex flex-wrap gap-3">
+                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
                   {request.images.map((image, index) => {
                     const src = getImageUrl(image.large || image.original);
                     return src ? (
                       <img
-                        key={`${image.original}-${index}`}
+                        key={image.original + '-' + index}
                         src={src}
                         alt={request.title}
                         loading="lazy"
-                        className="h-40 w-40 rounded-md border border-border object-cover"
+                        className="aspect-square w-full rounded-md border border-border object-cover"
                       />
                     ) : null;
                   })}
@@ -130,38 +131,59 @@ export default function BuyRequestDetailPage() {
 
               <Card>
                 <CardContent className="p-6">
-                  <dl className="grid grid-cols-2 sm:grid-cols-3 gap-x-6 gap-y-3 text-sm">
-                    <dt className="text-muted-foreground">
-                      {t('wanted.newQuantity', { defaultValue: 'How many?' })}
-                    </dt>
-                    <dd>
-                      {request.quantity}
-                      {request.unit ? ` ${request.unit}` : ''}
-                    </dd>
-                    <dt className="text-muted-foreground">
-                      {t('wanted.newBudget', { defaultValue: 'Your maximum price' })}
-                    </dt>
-                    <dd>
-                      {budget
-                        ? `${budget.amount} ${getPaymentCoinDisplayLabel(budget.currency) || budget.currency}`
-                        : '—'}
-                    </dd>
-                    <dt className="text-muted-foreground">
-                      {t('wanted.newCurrencies', { defaultValue: 'Accepted currencies' })}
-                    </dt>
-                    <dd>
-                      {request.acceptedCurrencies
-                        .map(code => getPaymentCoinDisplayLabel(code) || code)
-                        .join(', ')}
-                    </dd>
-                    <dt className="text-muted-foreground">
-                      {t('wanted.newDeliverTo', { defaultValue: 'Deliver to' })}
-                    </dt>
-                    <dd>{request.deliverTo || '—'}</dd>
-                    <dt className="text-muted-foreground">
-                      {t('wanted.newCategory', { defaultValue: 'Category' })}
-                    </dt>
-                    <dd>{request.categorySlug || '—'}</dd>
+                  <dl className="grid grid-cols-1 gap-x-6 gap-y-4 text-sm sm:grid-cols-2 lg:grid-cols-3">
+                    <div>
+                      <dt className="text-xs text-muted-foreground">
+                        {t('wanted.newQuantity', { defaultValue: 'How many?' })}
+                      </dt>
+                      <dd className="mt-1">
+                        {request.quantity}
+                        {request.unit ? ` ${request.unit}` : ''}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt className="text-xs text-muted-foreground">
+                        {t('wanted.newBudget', { defaultValue: 'Your maximum price' })}
+                      </dt>
+                      <dd className="mt-1">
+                        {budget ? (
+                          <span className="inline-flex items-center gap-1.5">
+                            <span className="font-medium">{budget.amount}</span>
+                            <TokenIcon token={budget.currency} size={16} />
+                            {getPaymentCoinDisplayLabel(budget.currency) || budget.currency}
+                          </span>
+                        ) : (
+                          '—'
+                        )}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt className="text-xs text-muted-foreground">
+                        {t('wanted.newCurrencies', { defaultValue: 'Accepted currencies' })}
+                      </dt>
+                      <dd className="mt-1">
+                        <span className="flex flex-wrap gap-x-3 gap-y-1">
+                          {request.acceptedCurrencies.map(code => (
+                            <span key={code} className="inline-flex items-center gap-1.5">
+                              <TokenIcon token={code} size={16} />
+                              {getPaymentCoinDisplayLabel(code) || code}
+                            </span>
+                          ))}
+                        </span>
+                      </dd>
+                    </div>
+                    <div>
+                      <dt className="text-xs text-muted-foreground">
+                        {t('wanted.newDeliverTo', { defaultValue: 'Deliver to' })}
+                      </dt>
+                      <dd className="mt-1">{request.deliverTo || '—'}</dd>
+                    </div>
+                    <div>
+                      <dt className="text-xs text-muted-foreground">
+                        {t('wanted.newCategory', { defaultValue: 'Category' })}
+                      </dt>
+                      <dd className="mt-1">{request.categorySlug || '—'}</dd>
+                    </div>
                   </dl>
                 </CardContent>
               </Card>
@@ -354,7 +376,10 @@ function OfferForm({ slug, acceptedCurrencies }: { slug: string; acceptedCurrenc
                 <SelectContent>
                   {acceptedCurrencies.map(code => (
                     <SelectItem key={code} value={code}>
-                      {getPaymentCoinDisplayLabel(code) || code}
+                      <span className="flex items-center gap-2">
+                        <TokenIcon token={code} size={16} />
+                        {getPaymentCoinDisplayLabel(code) || code}
+                      </span>
                     </SelectItem>
                   ))}
                 </SelectContent>

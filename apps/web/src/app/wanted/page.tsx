@@ -11,6 +11,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { EmptyState } from '@/components/ui/empty-state';
 import { ErrorAlert } from '@/components/ui/error-alert';
+import { ImageOff } from 'lucide-react';
+import { TokenIcon } from '@/components/Payment/TokenIcon';
 import { BuyRequestStatusBadge } from '@/components/wanted/BuyRequestStatusBadge';
 import {
   Select,
@@ -109,7 +111,7 @@ export default function WantedBoardPage() {
               })}
             />
           ) : (
-            <Grid cols={3} colsMobile={1} colsTablet={2} gap="lg">
+            <Grid cols={4} colsMobile={2} colsTablet={3} gap="md">
               {visible.map(request => (
                 <BuyRequestCard key={request.slug} request={request} />
               ))}
@@ -125,45 +127,56 @@ export default function WantedBoardPage() {
 function BuyRequestCard({ request }: { request: BuyRequest }) {
   const { t } = useI18n();
   const budget = request.budget?.max;
+  const cover = request.images?.[0];
 
   return (
     <Link href={`/wanted/${encodeURIComponent(request.slug)}`} className="block">
-      <Card className="h-full hover:shadow-md transition-shadow">
-        <CardContent className="p-4 flex flex-col gap-3">
-          {request.images && request.images.length > 0 && (
+      <Card className="h-full overflow-hidden transition-shadow hover:shadow-md">
+        <div className="relative aspect-square w-full bg-muted">
+          {cover ? (
             <img
-              src={getImageUrl(request.images[0].small || request.images[0].original)}
+              src={getImageUrl(cover.small || cover.original)}
               alt={request.title}
               loading="lazy"
-              className="h-32 w-full rounded-md border border-border object-cover"
+              className="h-full w-full object-cover"
             />
+          ) : (
+            <div className="flex h-full w-full items-center justify-center text-muted-foreground/50">
+              <ImageOff className="h-8 w-8" aria-hidden="true" />
+            </div>
           )}
-          <div className="flex items-start justify-between gap-2">
-            <h3 className="font-semibold text-base line-clamp-2">{request.title}</h3>
+          <div className="absolute left-2 top-2">
             <BuyRequestStatusBadge status={request.status} />
           </div>
+        </div>
 
-          {request.description && (
-            <p className="text-sm text-muted-foreground line-clamp-2">{request.description}</p>
-          )}
+        <CardContent className="flex flex-col gap-2 p-3">
+          <h3 className="line-clamp-2 text-sm font-medium leading-snug">{request.title}</h3>
 
-          <dl className="grid grid-cols-2 gap-x-3 gap-y-1 text-xs text-muted-foreground">
-            <dt>{t('wanted.newQuantity', { defaultValue: 'How many?' })}</dt>
-            <dd className="text-right text-foreground">
+          <div className="flex items-center gap-1.5 text-primary">
+            <span className="text-lg font-semibold leading-none">
+              {budget ? budget.amount : '—'}
+            </span>
+            {budget && (
+              <>
+                <TokenIcon token={budget.currency} size={14} />
+                <span className="text-xs font-medium">
+                  {getPaymentCoinDisplayLabel(budget.currency) || budget.currency}
+                </span>
+              </>
+            )}
+          </div>
+
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
+            <span>
               {request.quantity}
               {request.unit ? ` ${request.unit}` : ''}
-            </dd>
-            <dt>{t('wanted.newBudget', { defaultValue: 'Your maximum price' })}</dt>
-            <dd className="text-right text-foreground">
-              {budget
-                ? `${budget.amount} ${getPaymentCoinDisplayLabel(budget.currency) || budget.currency}`
-                : '—'}
-            </dd>
-            <dt>{t('wanted.newDeliverTo', { defaultValue: 'Deliver to' })}</dt>
-            <dd className="text-right text-foreground">{request.deliverTo || '—'}</dd>
-            <dt>{t('wanted.offersTitle', { defaultValue: 'Offers' })}</dt>
-            <dd className="text-right text-foreground">{request.offerCount}</dd>
-          </dl>
+            </span>
+            {request.deliverTo && <span>{request.deliverTo}</span>}
+            <span>
+              {t('wanted.offersTitle', { defaultValue: 'Offers' })} {request.offerCount}
+            </span>
+          </div>
         </CardContent>
       </Card>
     </Link>
