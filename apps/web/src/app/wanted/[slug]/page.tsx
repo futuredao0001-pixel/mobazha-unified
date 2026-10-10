@@ -20,7 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { getPaymentCoinDisplayLabel } from '@mobazha/core/data/tokens';
+import { wantedCoinLabel } from '@/components/wanted/wantedCoins';
 import { EmptyState } from '@/components/ui/empty-state';
 import { ErrorAlert } from '@/components/ui/error-alert';
 import { TokenIcon } from '@/components/Payment/TokenIcon';
@@ -195,7 +195,7 @@ export default function BuyRequestDetailPage() {
                           <span className="inline-flex items-center gap-1.5">
                             <span className="font-medium">{budget.amount}</span>
                             <TokenIcon token={budget.currency} size={16} />
-                            {getPaymentCoinDisplayLabel(budget.currency) || budget.currency}
+                            {wantedCoinLabel(budget.currency)}
                           </span>
                         ) : (
                           '—'
@@ -211,7 +211,7 @@ export default function BuyRequestDetailPage() {
                           {request.acceptedCurrencies.map(code => (
                             <span key={code} className="inline-flex items-center gap-1.5">
                               <TokenIcon token={code} size={16} />
-                              {getPaymentCoinDisplayLabel(code) || code}
+                              {wantedCoinLabel(code)}
                             </span>
                           ))}
                         </span>
@@ -317,8 +317,7 @@ function OfferRow({
         <div className="flex items-start justify-between gap-3">
           <div className="flex flex-col gap-1">
             <span className="font-semibold">
-              {offer.unitPrice.amount}{' '}
-              {getPaymentCoinDisplayLabel(offer.unitPrice.currency) || offer.unitPrice.currency}
+              {offer.unitPrice.amount} {wantedCoinLabel(offer.unitPrice.currency)}
             </span>
             <span className="text-xs text-muted-foreground">
               {shortPeer(offer.sellerID.peerID)}
@@ -423,7 +422,7 @@ function OfferForm({ slug, acceptedCurrencies }: { slug: string; acceptedCurrenc
                     <SelectItem key={code} value={code}>
                       <span className="flex items-center gap-2">
                         <TokenIcon token={code} size={16} />
-                        {getPaymentCoinDisplayLabel(code) || code}
+                        {wantedCoinLabel(code)}
                       </span>
                     </SelectItem>
                   ))}

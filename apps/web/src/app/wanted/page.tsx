@@ -23,7 +23,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { getImageUrl, useBuyRequests, useI18n } from '@mobazha/core';
-import { getPaymentCoinDisplayLabel } from '@mobazha/core/data/tokens';
+import { wantedCoinLabel } from '@/components/wanted/wantedCoins';
 import type { BuyRequest } from '@mobazha/core';
 
 const ALL_CATEGORIES = '__all__';
@@ -192,9 +192,7 @@ function BuyRequestCard({ request }: { request: BuyRequest }) {
             {budget && (
               <>
                 <TokenIcon token={budget.currency} size={14} />
-                <span className="text-xs font-medium">
-                  {getPaymentCoinDisplayLabel(budget.currency) || budget.currency}
-                </span>
+                <span className="text-xs font-medium">{wantedCoinLabel(budget.currency)}</span>
               </>
             )}
           </div>
