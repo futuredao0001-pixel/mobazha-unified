@@ -23,6 +23,7 @@ import { getPaymentCoinDisplayLabel } from '@mobazha/core/data/tokens';
 import { EmptyState } from '@/components/ui/empty-state';
 import { ErrorAlert } from '@/components/ui/error-alert';
 import { BuyRequestStatusBadge } from '@/components/wanted/BuyRequestStatusBadge';
+import { MessageBuyerButton } from '@/components/wanted/MessageBuyerButton';
 import {
   getImageUrl,
   useAcceptBuyRequestOffer,
@@ -186,6 +187,8 @@ export default function BuyRequestDetailPage() {
                   </Button>
                 </div>
               )}
+
+              {!isBuyer && <MessageBuyerButton buyerPeerID={request.buyerID.peerID} />}
 
               <section className="flex flex-col gap-4">
                 <h2 className="text-xl font-semibold">
