@@ -9,6 +9,9 @@ export const wantedEsOverlay: Partial<TranslationResource> = {
     boardTitle: 'Peticiones de compra',
     boardSubtitle: 'Di qué necesitas y los vendedores responden con ofertas.',
     postCta: 'Publicar petición',
+    createListing: 'Crear un producto con esta oferta',
+    createListingHint:
+      'El comprador eligió tu oferta. Publícala como producto para que el pedido se realice con normalidad.',
     filterAllCategories: 'Todas las categorías',
     searchPlaceholder: 'Buscar peticiones…',
     emptyTitle: 'Todavía no hay peticiones',

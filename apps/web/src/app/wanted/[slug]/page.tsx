@@ -5,6 +5,7 @@
 'use client';
 
 import { type FormEvent, useEffect, useRef, useState } from 'react';
+import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { Header, Footer } from '@/components';
 import { Container } from '@/components/layouts';
@@ -86,6 +87,7 @@ function RequestDescription({ text }: { text: string }) {
 }
 
 const OPEN_STATUS = 'open';
+const ACCEPTED_OFFER_STATUS = 'accepted';
 
 function shortPeer(peerID: string): string {
   if (!peerID) return '';
@@ -106,6 +108,12 @@ export default function BuyRequestDetailPage() {
   const isBuyer = !!request && !!profile?.peerID && request.buyerID.peerID === profile.peerID;
   const isOpen = request?.status === OPEN_STATUS;
   const budget = request?.budget?.max;
+
+  // Only the seller whose offer won gets the bridge into the listing form:
+  // publishing it is what turns this request into a real, escrowed order.
+  const acceptedOffer = offers.find(offer => offer.status === ACCEPTED_OFFER_STATUS);
+  const acceptedOfferIsMine =
+    !!acceptedOffer && !!profile?.peerID && acceptedOffer.sellerID.peerID === profile.peerID;
 
   const handleAccept = async (offerID: string) => {
     setActionFailed(false);
@@ -284,6 +292,26 @@ export default function BuyRequestDetailPage() {
 
               {!isBuyer && isOpen && (
                 <OfferForm slug={slug} acceptedCurrencies={request.acceptedCurrencies} />
+              )}
+
+              {acceptedOfferIsMine && (
+                <div className="flex flex-col gap-3 rounded-lg border border-primary/40 bg-primary/5 p-4">
+                  <p className="text-sm text-muted-foreground">
+                    {t('wanted.createListingHint', {
+                      defaultValue:
+                        'The buyer picked your offer. Publish it as a product so the order can be placed normally.',
+                    })}
+                  </p>
+                  <Button asChild className="self-start">
+                    <Link
+                      href={`/listing/new?from=wanted&wanted=${encodeURIComponent(slug)}&offer=${encodeURIComponent(acceptedOffer.id)}`}
+                    >
+                      {t('wanted.createListing', {
+                        defaultValue: 'Create a product from this offer',
+                      })}
+                    </Link>
+                  </Button>
+                </div>
               )}
 
               <CommentsSection slug={slug} canComment={isOpen || request.status === 'locked'} />

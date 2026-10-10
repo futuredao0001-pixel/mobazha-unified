@@ -9,6 +9,9 @@ export const wantedPtOverlay: Partial<TranslationResource> = {
     boardTitle: 'Pedidos de compra',
     boardSubtitle: 'Diga o que precisa e os vendedores respondem com ofertas.',
     postCta: 'Publicar pedido',
+    createListing: 'Criar um produto com esta oferta',
+    createListingHint:
+      'O comprador escolheu a sua oferta. Publique-a como produto para que o pedido siga o fluxo normal.',
     filterAllCategories: 'Todas as categorias',
     searchPlaceholder: 'Buscar pedidos…',
     emptyTitle: 'Ainda não há pedidos',

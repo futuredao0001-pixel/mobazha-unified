@@ -9,6 +9,9 @@ export const wantedZhOverlay: Partial<TranslationResource> = {
     boardTitle: '委托',
     boardSubtitle: '说出你要什么，卖家带价来谈。',
     postCta: '发布委托',
+    createListing: '据此创建商品',
+    createListingHint:
+      '买家已选定你的报价。把它发布成商品，买家就能正常下单，走平台原生的托管、发货与仲裁流程。',
     filterAllCategories: '全部分类',
     searchPlaceholder: '搜索委托…',
     emptyTitle: '还没有委托',

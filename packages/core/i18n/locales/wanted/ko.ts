@@ -9,6 +9,9 @@ export const wantedKoOverlay: Partial<TranslationResource> = {
     boardTitle: '구매 요청',
     boardSubtitle: '필요한 물건을 알려주면 판매자가 제안으로 응답합니다.',
     postCta: '요청 올리기',
+    createListing: '이 제안으로 상품 만들기',
+    createListingHint:
+      '구매자가 회원님의 제안을 선택했습니다. 상품으로 등록하면 정상적으로 주문할 수 있습니다.',
     filterAllCategories: '전체 카테고리',
     searchPlaceholder: '요청 검색…',
     emptyTitle: '아직 요청이 없습니다',

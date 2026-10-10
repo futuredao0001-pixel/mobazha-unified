@@ -9,6 +9,9 @@ export const wantedRuOverlay: Partial<TranslationResource> = {
     boardTitle: 'Запросы на покупку',
     boardSubtitle: 'Напишите, что вам нужно, — продавцы ответят предложениями.',
     postCta: 'Опубликовать запрос',
+    createListing: 'Создать товар по этому предложению',
+    createListingHint:
+      'Покупатель выбрал ваше предложение. Опубликуйте его как товар, чтобы заказ оформлялся обычным путём.',
     filterAllCategories: 'Все категории',
     searchPlaceholder: 'Поиск запросов…',
     emptyTitle: 'Запросов пока нет',

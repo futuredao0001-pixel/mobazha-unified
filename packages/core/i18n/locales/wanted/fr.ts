@@ -9,6 +9,9 @@ export const wantedFrOverlay: Partial<TranslationResource> = {
     boardTitle: "Demandes d'achat",
     boardSubtitle: "Dites ce qu'il vous faut, les vendeurs répondent par des offres.",
     postCta: 'Publier une demande',
+    createListing: 'Créer un produit à partir de cette offre',
+    createListingHint:
+      'L\'acheteur a choisi votre offre. Publiez-la comme produit pour que la commande se fasse normalement.',
     filterAllCategories: 'Toutes les catégories',
     searchPlaceholder: 'Rechercher des demandes…',
     emptyTitle: "Aucune demande pour l'instant",

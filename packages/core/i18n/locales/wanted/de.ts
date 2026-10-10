@@ -9,6 +9,9 @@ export const wantedDeOverlay: Partial<TranslationResource> = {
     boardTitle: 'Kaufgesuche',
     boardSubtitle: 'Sagen Sie, was Sie brauchen – Verkäufer antworten mit Angeboten.',
     postCta: 'Gesuch veröffentlichen',
+    createListing: 'Aus diesem Angebot ein Produkt erstellen',
+    createListingHint:
+      'Der Käufer hat Ihr Angebot gewählt. Veröffentlichen Sie es als Produkt, damit normal bestellt werden kann.',
     filterAllCategories: 'Alle Kategorien',
     searchPlaceholder: 'Gesuche durchsuchen…',
     emptyTitle: 'Noch keine Gesuche',
