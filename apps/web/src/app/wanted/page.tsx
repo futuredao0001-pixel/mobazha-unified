@@ -9,9 +9,10 @@ import { Header, Footer } from '@/components';
 import { Container, Grid } from '@/components/layouts';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { EmptyState } from '@/components/ui/empty-state';
+import { EmptyState, NoSearchResults } from '@/components/ui/empty-state';
 import { ErrorAlert } from '@/components/ui/error-alert';
-import { ImageOff } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { ImageOff, Search } from 'lucide-react';
 import { TokenIcon } from '@/components/Payment/TokenIcon';
 import { BuyRequestStatusBadge } from '@/components/wanted/BuyRequestStatusBadge';
 import {
@@ -31,6 +32,7 @@ export default function WantedBoardPage() {
   const { t } = useI18n();
   const { requests, isLoading, error, refetch } = useBuyRequests();
   const [category, setCategory] = useState<string>(ALL_CATEGORIES);
+  const [query, setQuery] = useState('');
 
   // The board has no canonical category taxonomy yet, so the filter is built
   // from the categories actually present and applied client-side: a server-side
@@ -43,13 +45,23 @@ export default function WantedBoardPage() {
     return Array.from(seen).sort();
   }, [requests]);
 
-  const visible = useMemo(
-    () =>
+  const visible = useMemo(() => {
+    const inCategory =
       category === ALL_CATEGORIES
         ? requests
-        : requests.filter(request => request.categorySlug === category),
-    [requests, category]
-  );
+        : requests.filter(request => request.categorySlug === category);
+
+    // Board-local search. It only ever looks at the requests this board has
+    // loaded and never touches the site-wide search.
+    const needle = query.trim().toLowerCase();
+    if (!needle) return inCategory;
+
+    return inCategory.filter(request =>
+      [request.title, request.description, request.categorySlug, request.deliverTo]
+        .filter((field): field is string => typeof field === 'string' && field.length > 0)
+        .some(field => field.toLowerCase().includes(needle))
+    );
+  }, [requests, category, query]);
 
   return (
     <>
@@ -74,25 +86,41 @@ export default function WantedBoardPage() {
             </Button>
           </div>
 
-          {categories.length > 1 && (
-            <div className="mb-6 max-w-xs">
-              <Select value={category} onValueChange={setCategory}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value={ALL_CATEGORIES}>
-                    {t('wanted.filterAllCategories', { defaultValue: 'All categories' })}
-                  </SelectItem>
-                  {categories.map(slug => (
-                    <SelectItem key={slug} value={slug}>
-                      {slug}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+          <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center">
+            <div className="relative w-full sm:max-w-sm">
+              <Search
+                className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
+                aria-hidden="true"
+              />
+              <Input
+                type="search"
+                value={query}
+                onChange={event => setQuery(event.target.value)}
+                placeholder={t('wanted.searchPlaceholder', { defaultValue: 'Search requests…' })}
+                aria-label={t('wanted.searchPlaceholder', { defaultValue: 'Search requests…' })}
+                className="pl-9"
+              />
             </div>
-          )}
+            {categories.length > 1 && (
+              <div className="w-full sm:max-w-xs">
+                <Select value={category} onValueChange={setCategory}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value={ALL_CATEGORIES}>
+                      {t('wanted.filterAllCategories', { defaultValue: 'All categories' })}
+                    </SelectItem>
+                    {categories.map(slug => (
+                      <SelectItem key={slug} value={slug}>
+                        {slug}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+          </div>
 
           <ErrorAlert
             error={typeof error === 'string' ? error : null}
@@ -104,12 +132,16 @@ export default function WantedBoardPage() {
               {t('common.loading')}
             </div>
           ) : visible.length === 0 ? (
-            <EmptyState
-              title={t('wanted.emptyTitle', { defaultValue: 'No requests yet' })}
-              description={t('wanted.emptyBody', {
-                defaultValue: 'Be the first to say what you are looking for.',
-              })}
-            />
+            query.trim() && requests.length > 0 ? (
+              <NoSearchResults query={query.trim()} onClear={() => setQuery('')} />
+            ) : (
+              <EmptyState
+                title={t('wanted.emptyTitle', { defaultValue: 'No requests yet' })}
+                description={t('wanted.emptyBody', {
+                  defaultValue: 'Be the first to say what you are looking for.',
+                })}
+              />
+            )
           ) : (
             <Grid cols={4} colsMobile={2} colsTablet={3} gap="md">
               {visible.map(request => (

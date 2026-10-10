@@ -10,6 +10,7 @@ export const wantedFrOverlay: Partial<TranslationResource> = {
     boardSubtitle: "Dites ce qu'il vous faut, les vendeurs répondent par des offres.",
     postCta: 'Publier une demande',
     filterAllCategories: 'Toutes les catégories',
+    searchPlaceholder: 'Rechercher des demandes…',
     emptyTitle: "Aucune demande pour l'instant",
     emptyBody: 'Soyez le premier à dire ce que vous cherchez.',
     newTitle: 'Que cherchez-vous ?',

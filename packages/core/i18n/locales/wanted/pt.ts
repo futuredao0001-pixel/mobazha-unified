@@ -10,6 +10,7 @@ export const wantedPtOverlay: Partial<TranslationResource> = {
     boardSubtitle: 'Diga o que precisa e os vendedores respondem com ofertas.',
     postCta: 'Publicar pedido',
     filterAllCategories: 'Todas as categorias',
+    searchPlaceholder: 'Buscar pedidos…',
     emptyTitle: 'Ainda não há pedidos',
     emptyBody: 'Seja o primeiro a dizer o que procura.',
     newTitle: 'O que você procura?',

@@ -10,6 +10,7 @@ export const wantedDeOverlay: Partial<TranslationResource> = {
     boardSubtitle: 'Sagen Sie, was Sie brauchen – Verkäufer antworten mit Angeboten.',
     postCta: 'Gesuch veröffentlichen',
     filterAllCategories: 'Alle Kategorien',
+    searchPlaceholder: 'Gesuche durchsuchen…',
     emptyTitle: 'Noch keine Gesuche',
     emptyBody: 'Veröffentlichen Sie als Erste/r, was Sie suchen.',
     newTitle: 'Was suchen Sie?',

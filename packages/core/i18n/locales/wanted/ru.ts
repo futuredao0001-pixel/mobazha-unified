@@ -10,6 +10,7 @@ export const wantedRuOverlay: Partial<TranslationResource> = {
     boardSubtitle: 'Напишите, что вам нужно, — продавцы ответят предложениями.',
     postCta: 'Опубликовать запрос',
     filterAllCategories: 'Все категории',
+    searchPlaceholder: 'Поиск запросов…',
     emptyTitle: 'Запросов пока нет',
     emptyBody: 'Расскажите первым, что вы ищете.',
     newTitle: 'Что вы ищете?',

@@ -10,6 +10,7 @@ export const wantedJaOverlay: Partial<TranslationResource> = {
     boardSubtitle: '欲しいものを書けば、売り手がオファーで応えます。',
     postCta: 'リクエストを投稿',
     filterAllCategories: 'すべてのカテゴリ',
+    searchPlaceholder: 'リクエストを検索…',
     emptyTitle: 'まだリクエストはありません',
     emptyBody: '探しているものを最初に書いてみましょう。',
     newTitle: '何を探していますか？',

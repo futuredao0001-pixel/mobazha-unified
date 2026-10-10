@@ -10,6 +10,7 @@ export const wantedEnOverlay: Partial<TranslationResource> = {
     boardSubtitle: 'Say what you need and sellers answer with offers.',
     postCta: 'Post a request',
     filterAllCategories: 'All categories',
+    searchPlaceholder: 'Search requests…',
     emptyTitle: 'No requests yet',
     emptyBody: 'Be the first to say what you are looking for.',
     newTitle: 'What are you looking for?',

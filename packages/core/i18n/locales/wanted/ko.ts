@@ -10,6 +10,7 @@ export const wantedKoOverlay: Partial<TranslationResource> = {
     boardSubtitle: '필요한 물건을 알려주면 판매자가 제안으로 응답합니다.',
     postCta: '요청 올리기',
     filterAllCategories: '전체 카테고리',
+    searchPlaceholder: '요청 검색…',
     emptyTitle: '아직 요청이 없습니다',
     emptyBody: '찾는 물건을 가장 먼저 알려주세요.',
     newTitle: '무엇을 찾고 계신가요?',

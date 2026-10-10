@@ -148,7 +148,7 @@ if (!__SOVEREIGN__) {
     { path: '/collections', element: lazyPage(() => import('./app/collections/page')) },
     { path: '/collections/:id', element: lazyPage(() => import('./app/collections/[id]/page')) },
 
-    // Wanted board（求购 — 公开浏览，发布需要登录）
+    // Wanted board（委托 — 公开浏览，发布需要登录）
     { path: '/wanted', element: lazyPage(() => import('./app/wanted/page')) },
     { path: '/wanted/new', element: lazyPage(() => import('./app/wanted/new/page')) },
     {
