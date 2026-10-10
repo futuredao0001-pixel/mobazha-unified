@@ -6,12 +6,12 @@ import { getPaymentCoinDisplayLabel } from '@mobazha/core/data/tokens';
 /**
  * Currencies a buy request may be quoted and settled in.
  *
- * A node settles more chains than a buyer would ever quote a price in, so this
- * list is deliberately narrow: the assets the public node actually moves
- * (BTC/BCH/LTC over address transfer, ETH/BNB/SOL over external wallets) plus
- * the stablecoins those wallets carry. Naming a chain such as Base or Arbitrum
- * as a budget currency would be meaningless — the value moving over it is ETH,
- * USDT or USDC, and the chains themselves stay selectable at checkout.
+ * This mirrors what a public node actually settles, named the way the platform
+ * names it: the assets moved over address transfer (BTC/BCH/LTC), the chains a
+ * buyer brings an external wallet to (ETH, BNB, SOL, Polygon, Base, Arbitrum),
+ * and the stablecoins those wallets carry. It is deliberately narrower than the
+ * token registry, which also lists every chain-suffixed variant of a stablecoin
+ * (BASEUSDT, ARBUSDC, …) that nobody quotes a budget in.
  */
 export interface WantedCoin {
   id: string;
@@ -25,13 +25,25 @@ export const WANTED_COIN_IDS: readonly string[] = [
   'ETH',
   'BNB',
   'SOL',
+  'MATIC',
+  'BASE',
+  'ARB',
   'USDT',
   'USDC',
 ];
 
+/**
+ * Polygon is also a token id, so the registry already labels it. Base and
+ * Arbitrum only exist as chains there, and a chain id is not a display name.
+ */
+const CHAIN_LABELS: Record<string, string> = {
+  BASE: 'Base',
+  ARB: 'Arbitrum',
+};
+
 export const WANTED_COINS: WantedCoin[] = WANTED_COIN_IDS.map(id => ({
   id,
-  label: getPaymentCoinDisplayLabel(id) || id,
+  label: CHAIN_LABELS[id] ?? (getPaymentCoinDisplayLabel(id) || id),
 }));
 
 /** Stablecoins are what most offers actually settle in, so lead with one. */
