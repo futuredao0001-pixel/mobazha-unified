@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MPL-2.0
 // Copyright (c) 2026 fengzie and the respective contributors.
 
+import type { Image } from './common';
+
 /**
  * Buy request ("wanted") domain types.
  *
@@ -70,6 +72,8 @@ export interface BuyRequest {
   expiresAt: string;
   description?: string;
   condition: BuyRequestCondition;
+  /** Pictures attached by the buyer; the node accepts at most 8. */
+  images?: Image[];
   status: BuyRequestStatus;
   /** Set once the buyer accepts an offer. */
   acceptedOfferID?: string;
@@ -119,6 +123,8 @@ export interface CreateBuyRequestRequest {
   condition?: BuyRequestCondition;
   expiresInDays?: number;
   expiresAt?: string;
+  /** Hash sets returned by the media upload endpoint. */
+  images?: Image[];
 }
 
 /**

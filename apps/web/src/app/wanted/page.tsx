@@ -19,7 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { useBuyRequests, useI18n } from '@mobazha/core';
+import { getImageUrl, useBuyRequests, useI18n } from '@mobazha/core';
 import { getPaymentCoinDisplayLabel } from '@mobazha/core/data/tokens';
 import type { BuyRequest } from '@mobazha/core';
 
@@ -130,6 +130,14 @@ function BuyRequestCard({ request }: { request: BuyRequest }) {
     <Link href={`/wanted/${encodeURIComponent(request.slug)}`} className="block">
       <Card className="h-full hover:shadow-md transition-shadow">
         <CardContent className="p-4 flex flex-col gap-3">
+          {request.images && request.images.length > 0 && (
+            <img
+              src={getImageUrl(request.images[0].small || request.images[0].original)}
+              alt={request.title}
+              loading="lazy"
+              className="h-32 w-full rounded-md border border-border object-cover"
+            />
+          )}
           <div className="flex items-start justify-between gap-2">
             <h3 className="font-semibold text-base line-clamp-2">{request.title}</h3>
             <BuyRequestStatusBadge status={request.status} />

@@ -24,6 +24,7 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { ErrorAlert } from '@/components/ui/error-alert';
 import { BuyRequestStatusBadge } from '@/components/wanted/BuyRequestStatusBadge';
 import {
+  getImageUrl,
   useAcceptBuyRequestOffer,
   useBuyRequestComments,
   useBuyRequestDetail,
@@ -108,6 +109,23 @@ export default function BuyRequestDetailPage() {
                   <p className="text-muted-foreground whitespace-pre-line">{request.description}</p>
                 )}
               </div>
+
+              {request.images && request.images.length > 0 && (
+                <div className="flex flex-wrap gap-3">
+                  {request.images.map((image, index) => {
+                    const src = getImageUrl(image.large || image.original);
+                    return src ? (
+                      <img
+                        key={`${image.original}-${index}`}
+                        src={src}
+                        alt={request.title}
+                        loading="lazy"
+                        className="h-40 w-40 rounded-md border border-border object-cover"
+                      />
+                    ) : null;
+                  })}
+                </div>
+              )}
 
               <Card>
                 <CardContent className="p-6">

@@ -12,6 +12,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ErrorAlert } from '@/components/ui/error-alert';
+import { BuyRequestImagePicker } from '@/components/wanted/BuyRequestImagePicker';
 import {
   Select,
   SelectContent,
@@ -25,7 +26,7 @@ import {
   getPaymentCoinDisplayLabel,
   isPaymentCoinEnabled,
 } from '@mobazha/core/data/tokens';
-import type { CreateBuyRequestRequest } from '@mobazha/core';
+import type { CreateBuyRequestRequest, Image } from '@mobazha/core';
 
 // Settleable coins come from the platform token registry rather than a
 // hand-written list, so the board can only ever quote currencies the node can
@@ -74,6 +75,7 @@ function NewWantedRequestForm() {
   const [deliverTo, setDeliverTo] = useState('');
   const [categorySlug, setCategorySlug] = useState('');
   const [description, setDescription] = useState('');
+  const [images, setImages] = useState<Image[]>([]);
   const [submitFailed, setSubmitFailed] = useState(false);
 
   const acceptedCurrencies = useMemo(
@@ -103,6 +105,7 @@ function NewWantedRequestForm() {
     };
     if (categorySlug.trim()) payload.categorySlug = categorySlug.trim();
     if (description.trim()) payload.description = description.trim();
+    if (images.length > 0) payload.images = images;
 
     try {
       const created = await createRequest.mutateAsync(payload);
@@ -271,6 +274,8 @@ function NewWantedRequestForm() {
                     className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
                   />
                 </div>
+
+                <BuyRequestImagePicker images={images} onImagesChange={setImages} />
 
                 <ErrorAlert error={publishError} />
 
