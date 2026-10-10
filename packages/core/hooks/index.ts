@@ -13,6 +13,9 @@ export * from './useUnifiedFrontendComposition';
 export * from './useProducts';
 export * from './useListingForm';
 
+// Buy request (wanted board)
+export * from './useBuyRequests';
+
 // 订单相关
 export * from './useOrders';
 export * from './useOrderDetail';

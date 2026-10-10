@@ -53,6 +53,13 @@ export const NODE_API = {
   LISTINGS_INDEX: '/listings/index',
   LISTINGS_INDEX_PEER: (peerID: string) => `/listings/index/${peerID}`,
   LISTINGS_SUPPLY_SUMMARY: '/listings/supply-summary',
+  // --- Buy requests (wanted board) ---
+  BUY_REQUESTS: '/buy-requests',
+  BUY_REQUESTS_MINE: '/buy-requests/mine',
+  BUY_REQUEST: (slug: string) => `/buy-requests/${slug}`,
+  BUY_REQUEST_OFFERS: (slug: string) => `/buy-requests/${slug}/offers`,
+  BUY_REQUEST_ACCEPT: (slug: string) => `/buy-requests/${slug}/accept`,
+  BUY_REQUEST_COMMENTS: (slug: string) => `/buy-requests/${slug}/comments`,
 
   // --- Ratings ---
   RATINGS_INDEX: '/ratings/index',
