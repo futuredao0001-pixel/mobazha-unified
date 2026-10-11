@@ -58,6 +58,9 @@ export interface BuyRequestParty {
  */
 export interface BuyRequest {
   slug: string;
+  /** The record's revision. It starts at 1 and grows with every edit, which is
+   * what lets the index refuse a copy the owning node has already replaced. */
+  revision?: number;
   buyerID: BuyRequestParty;
   title: string;
   categorySlug: string;
@@ -110,17 +113,25 @@ export interface BuyRequestOffer {
  */
 export interface CreateBuyRequestRequest {
   title: string;
-  categorySlug?: string;
+  /**
+   * The listing taxonomy, when the buyer picks one. Optional: a buyer who does
+   * not know it is not made to invent one, and the request is still listed.
+   */
+  productType?: string;
   quantity: number;
-  unit?: string;
-  budgetMax: BuyRequestAmount;
-  /** Optional floor, same currency as `budgetMax`. */
-  budgetMinAmount?: string;
+  /**
+   * The ceiling: an amount in the currency's smallest unit plus the currency it
+   * is counted in. This is the shape the signed record carries.
+   */
+  budget: BuyRequestAmount;
   /** Defaults to the budget currency when omitted. */
   acceptedCurrencies?: string[];
-  deliverTo: string;
+  /**
+   * ISO 3166-1 alpha-2 country the goods must reach. Optional, and it is public
+   * along with the buyer's identity, which the form says before publishing.
+   */
+  shipTo?: string;
   description?: string;
-  condition?: BuyRequestCondition;
   expiresInDays?: number;
   expiresAt?: string;
   /** Hash sets returned by the media upload endpoint. */

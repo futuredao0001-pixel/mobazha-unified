@@ -15,6 +15,7 @@ export * from './useListingForm';
 
 // Buy request (wanted board)
 export * from './useBuyRequests';
+export * from './useContentTranslation';
 
 // 订单相关
 export * from './useOrders';

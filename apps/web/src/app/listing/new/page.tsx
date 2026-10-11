@@ -180,6 +180,9 @@ function CreateListingContent() {
   const cloneSlug = searchParams.get('clone');
   const wantedSlug = searchParams.get('wanted');
   const wantedOfferId = searchParams.get('offer');
+  // Set when the offer was made on another node's request, so the request is
+  // read from the node that owns it.
+  const wantedOwner = searchParams.get('peer')?.trim() ?? '';
   const fromParam = searchParams.get('from');
   const fromOnboarding = fromParam === 'onboarding';
   const fromAdmin = fromParam === 'admin';
@@ -206,7 +209,10 @@ function CreateListingContent() {
 
   // An accepted offer on a buy request becomes a normal product, so the form
   // arrives filled in from that offer instead of making the seller retype it.
-  const { request: wantedRequest, offers: wantedOffers } = useBuyRequestDetail(wantedSlug);
+  const { request: wantedRequest, offers: wantedOffers } = useBuyRequestDetail(
+    wantedSlug,
+    wantedOwner
+  );
   const wantedPrefill = useMemo<Partial<ListingFormData> | null>(() => {
     if (!wantedRequest || !wantedOfferId) return null;
     const offer = wantedOffers.find(candidate => candidate.id === wantedOfferId);

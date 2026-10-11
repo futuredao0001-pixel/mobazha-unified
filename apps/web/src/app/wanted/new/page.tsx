@@ -21,7 +21,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { TokenIcon } from '@/components/Payment/TokenIcon';
-import { DEFAULT_WANTED_COIN, WANTED_COINS } from '@/components/wanted/wantedCoins';
+import { defaultWantedCoin, getWantedCoins } from '@/components/wanted/wantedCoins';
 import { useCreateBuyRequest, useI18n } from '@mobazha/core';
 import type { CreateBuyRequestRequest, Image } from '@mobazha/core';
 
@@ -45,7 +45,11 @@ function NewWantedRequestForm() {
   const [title, setTitle] = useState('');
   const [quantity, setQuantity] = useState('1');
   const [budgetAmount, setBudgetAmount] = useState('');
-  const [budgetCurrency, setBudgetCurrency] = useState(DEFAULT_WANTED_COIN);
+  // What this node can be paid in, read when the form renders: the same list
+  // the payment settings offer, so a request is never written in a currency its
+  // seller cannot receive.
+  const coins = useMemo(() => getWantedCoins(), []);
+  const [budgetCurrency, setBudgetCurrency] = useState(() => defaultWantedCoin(coins));
   const [alsoAccept, setAlsoAccept] = useState<string[]>([]);
   const [expiresInDays, setExpiresInDays] = useState('7');
   const [deliverTo, setDeliverTo] = useState('');
@@ -59,8 +63,7 @@ function NewWantedRequestForm() {
     [budgetCurrency, alsoAccept]
   );
 
-  const canSubmit =
-    title.trim().length > 0 && budgetAmount.trim().length > 0 && deliverTo.trim().length > 0;
+  const canSubmit = title.trim().length > 0 && budgetAmount.trim().length > 0;
 
   const toggleCoin = (id: string) => {
     setAlsoAccept(prev => (prev.includes(id) ? prev.filter(c => c !== id) : [...prev, id]));
@@ -74,12 +77,12 @@ function NewWantedRequestForm() {
     const payload: CreateBuyRequestRequest = {
       title: title.trim(),
       quantity: Number.isFinite(parsedQuantity) && parsedQuantity > 0 ? parsedQuantity : 1,
-      budgetMax: { amount: budgetAmount.trim(), currency: budgetCurrency },
+      budget: { amount: budgetAmount.trim(), currency: budgetCurrency },
       expiresInDays: Number.parseInt(expiresInDays, 10) || 7,
       acceptedCurrencies,
-      deliverTo: deliverTo.trim().toUpperCase(),
     };
-    if (categorySlug.trim()) payload.categorySlug = categorySlug.trim();
+    if (deliverTo.trim()) payload.shipTo = deliverTo.trim().toUpperCase();
+    if (categorySlug.trim()) payload.productType = categorySlug.trim();
     if (description.trim()) payload.description = description.trim();
     if (images.length > 0) payload.images = images;
 
@@ -146,10 +149,13 @@ function NewWantedRequestForm() {
                       id="wanted-expires"
                       type="number"
                       min={1}
-                      max={365}
+                      max={30}
                       value={expiresInDays}
                       onChange={event => setExpiresInDays(event.target.value)}
                     />
+                    <p className="text-xs text-muted-foreground">
+                      {t('wanted.newExpiresHint', { defaultValue: 'Up to 30 days.' })}
+                    </p>
                   </div>
                 </div>
 
@@ -175,7 +181,7 @@ function NewWantedRequestForm() {
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        {WANTED_COINS.map(coin => (
+                        {coins.map(coin => (
                           <SelectItem key={coin.id} value={coin.id}>
                             <span className="flex items-center gap-2">
                               <TokenIcon token={coin.id} size={16} />
@@ -193,7 +199,7 @@ function NewWantedRequestForm() {
                     {t('wanted.newCurrencies', { defaultValue: 'Accepted currencies' })}
                   </Label>
                   <div className="flex flex-wrap gap-2 rounded-md border border-input p-3">
-                    {WANTED_COINS.map(coin => {
+                    {coins.map(coin => {
                       const checked = acceptedCurrencies.includes(coin.id);
                       const locked = coin.id === budgetCurrency;
                       return (
@@ -223,19 +229,20 @@ function NewWantedRequestForm() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                   <div className="flex flex-col gap-2">
                     <Label htmlFor="wanted-deliver">
-                      {t('wanted.newDeliverTo', { defaultValue: 'Deliver to' })}
+                      {t('wanted.newDeliverTo', { defaultValue: 'Deliver to' })} (
+                      {t('common.optional', { defaultValue: 'Optional' })})
                     </Label>
                     <Input
                       id="wanted-deliver"
                       value={deliverTo}
                       onChange={event => setDeliverTo(event.target.value)}
                       maxLength={2}
-                      required
                     />
                   </div>
                   <div className="flex flex-col gap-2">
                     <Label htmlFor="wanted-category">
-                      {t('wanted.newCategory', { defaultValue: 'Category' })}
+                      {t('wanted.newCategory', { defaultValue: 'Category' })} (
+                      {t('common.optional', { defaultValue: 'Optional' })})
                     </Label>
                     <Input
                       id="wanted-category"
@@ -263,6 +270,14 @@ function NewWantedRequestForm() {
                 </div>
 
                 <BuyRequestImagePicker images={images} onImagesChange={setImages} />
+
+                <p className="text-xs text-muted-foreground">
+                  {t('wanted.newPrivacyNotice', {
+                    defaultValue:
+                      'A request is public. It is published with your node identity, ' +
+                      'and sellers see your title, budget and the country it must reach.',
+                  })}
+                </p>
 
                 <ErrorAlert error={publishError} />
 

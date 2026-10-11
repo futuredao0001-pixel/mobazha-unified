@@ -19,6 +19,16 @@ import type {
 import { queryKeys } from './queryKeys';
 import { formatQueryError } from './queryUtils';
 
+/**
+ * Cache key for one request. A relayed read is cached apart from the local one:
+ * the same slug names a different request on a different node.
+ */
+function withOwnerKey(slug: string | null | undefined, peer?: string | null): string {
+  const owner = (peer ?? '').trim();
+  const base = slug ?? '';
+  return owner ? `${base}@${owner}` : base;
+}
+
 function filterKey(filter?: BuyRequestListFilter): string {
   if (!filter) return 'all';
   return [
@@ -34,7 +44,7 @@ function filterKey(filter?: BuyRequestListFilter): string {
 export function useBuyRequests(filter?: BuyRequestListFilter) {
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: queryKeys.buyRequests.list(filterKey(filter)),
-    queryFn: () => buyRequestApi.listBuyRequests(filter),
+    queryFn: () => buyRequestApi.listBoardBuyRequests(filter),
     staleTime: 60_000,
   });
 
@@ -47,10 +57,10 @@ export function useBuyRequests(filter?: BuyRequestListFilter) {
   };
 }
 
-export function useBuyRequestDetail(slug: string | null) {
+export function useBuyRequestDetail(slug: string | null, peer?: string | null) {
   const { data, isLoading, error, refetch } = useQuery({
-    queryKey: queryKeys.buyRequests.detail(slug ?? ''),
-    queryFn: () => buyRequestApi.getBuyRequest(slug as string),
+    queryKey: queryKeys.buyRequests.detail(withOwnerKey(slug, peer)),
+    queryFn: () => buyRequestApi.getBuyRequest(slug as string, peer),
     enabled: !!slug,
     staleTime: 30_000,
   });
@@ -90,13 +100,15 @@ export function useCreateBuyRequest() {
   });
 }
 
-export function useCreateBuyRequestOffer(slug: string) {
+export function useCreateBuyRequestOffer(slug: string, peer?: string | null) {
   const client = useQueryClient();
   return useMutation({
     mutationFn: (data: CreateBuyRequestOfferRequest) =>
-      buyRequestApi.createBuyRequestOffer(slug, data),
+      buyRequestApi.createBuyRequestOffer(slug, data, peer),
     onSuccess: () => {
-      void client.invalidateQueries({ queryKey: queryKeys.buyRequests.detail(slug) });
+      void client.invalidateQueries({
+        queryKey: queryKeys.buyRequests.detail(withOwnerKey(slug, peer)),
+      });
     },
   });
 }
@@ -129,10 +141,25 @@ export function useCancelBuyRequest(slug: string) {
   });
 }
 
-export function useBuyRequestComments(slug: string) {
+/**
+ * Edits a request. Every list and detail cache is invalidated, because an edit
+ * changes both the board a reader sees and the record the index holds.
+ */
+export function useUpdateBuyRequest(slug: string) {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: (data: CreateBuyRequestRequest) => buyRequestApi.updateBuyRequest(slug, data),
+    onSuccess: () => {
+      void client.invalidateQueries({ queryKey: queryKeys.buyRequests.all });
+      void client.invalidateQueries({ queryKey: queryKeys.buyRequests.detail(slug) });
+    },
+  });
+}
+
+export function useBuyRequestComments(slug: string, peer?: string | null) {
   const { data, isLoading, error, refetch } = useQuery({
-    queryKey: queryKeys.buyRequests.comments(slug),
-    queryFn: () => buyRequestApi.listBuyRequestComments(slug),
+    queryKey: queryKeys.buyRequests.comments(withOwnerKey(slug, peer)),
+    queryFn: () => buyRequestApi.listBuyRequestComments(slug, peer),
     enabled: !!slug,
     staleTime: 15_000,
   });
@@ -146,13 +173,15 @@ export function useBuyRequestComments(slug: string) {
   };
 }
 
-export function useCreateBuyRequestComment(slug: string) {
+export function useCreateBuyRequestComment(slug: string, peer?: string | null) {
   const client = useQueryClient();
   return useMutation({
     mutationFn: (data: CreateBuyRequestCommentRequest) =>
-      buyRequestApi.createBuyRequestComment(slug, data),
+      buyRequestApi.createBuyRequestComment(slug, data, peer),
     onSuccess: () => {
-      void client.invalidateQueries({ queryKey: queryKeys.buyRequests.comments(slug) });
+      void client.invalidateQueries({
+        queryKey: queryKeys.buyRequests.comments(withOwnerKey(slug, peer)),
+      });
     },
   });
 }

@@ -22,7 +22,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { getImageUrl, useBuyRequests, useI18n } from '@mobazha/core';
+import { getImageUrl, useBuyRequests, useI18n, useTranslatedTexts } from '@mobazha/core';
 import { wantedCoinLabel } from '@/components/wanted/wantedCoins';
 import type { BuyRequest } from '@mobazha/core';
 
@@ -79,11 +79,18 @@ export default function WantedBoardPage() {
                 })}
               </p>
             </div>
-            <Button asChild>
-              <Link href="/wanted/new">
-                {t('wanted.postCta', { defaultValue: 'Post a request' })}
-              </Link>
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button asChild variant="outline">
+                <Link href="/wanted/mine">
+                  {t('wanted.mineCta', { defaultValue: 'My requests' })}
+                </Link>
+              </Button>
+              <Button asChild>
+                <Link href="/wanted/new">
+                  {t('wanted.postCta', { defaultValue: 'Post a request' })}
+                </Link>
+              </Button>
+            </div>
           </div>
 
           <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center">
@@ -157,18 +164,27 @@ export default function WantedBoardPage() {
 }
 
 function BuyRequestCard({ request }: { request: BuyRequest }) {
-  const { t } = useI18n();
+  const [title] = useTranslatedTexts([request.title]);
+  // The index knows the buyer's public name; a bare peer ID says nothing to a
+  // seller looking for someone to answer.
+  const buyer =
+    request.buyerID?.name || (request.buyerID?.handle ? `@${request.buyerID.handle}` : '');
   const budget = request.budget?.max;
   const cover = request.images?.[0];
 
   return (
-    <Link href={`/wanted/${encodeURIComponent(request.slug)}`} className="block">
+    <Link
+      href={`/wanted/${encodeURIComponent(request.slug)}${
+        request.buyerID?.peerID ? `?peer=${encodeURIComponent(request.buyerID.peerID)}` : ''
+      }`}
+      className="block"
+    >
       <Card className="h-full overflow-hidden transition-shadow hover:shadow-md">
         <div className="relative aspect-square w-full bg-muted">
           {cover ? (
             <img
               src={getImageUrl(cover.small || cover.original)}
-              alt={request.title}
+              alt={title || request.title}
               loading="lazy"
               className="h-full w-full object-cover"
             />
@@ -183,7 +199,7 @@ function BuyRequestCard({ request }: { request: BuyRequest }) {
         </div>
 
         <CardContent className="flex flex-col gap-2 p-3">
-          <h3 className="line-clamp-2 text-sm font-medium leading-snug">{request.title}</h3>
+          <h3 className="line-clamp-2 text-sm font-medium leading-snug">{title || request.title}</h3>
 
           <div className="flex items-center gap-1.5 text-primary">
             <span className="text-lg font-semibold leading-none">
@@ -203,9 +219,7 @@ function BuyRequestCard({ request }: { request: BuyRequest }) {
               {request.unit ? ` ${request.unit}` : ''}
             </span>
             {request.deliverTo && <span>{request.deliverTo}</span>}
-            <span>
-              {t('wanted.offersTitle', { defaultValue: 'Offers' })} {request.offerCount}
-            </span>
+            {buyer && <span className="truncate">{buyer}</span>}
           </div>
         </CardContent>
       </Card>

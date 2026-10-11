@@ -6,10 +6,11 @@
 
 import { type FormEvent, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import { useParams } from 'next/navigation';
+import { useParams, useSearchParams } from 'next/navigation';
 import { Header, Footer } from '@/components';
 import { Container } from '@/components/layouts';
 import { Button } from '@/components/ui/button';
+import { copyToClipboard } from '@/lib/clipboard';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -29,6 +30,7 @@ import { BuyRequestStatusBadge } from '@/components/wanted/BuyRequestStatusBadge
 import { MessageBuyerButton } from '@/components/wanted/MessageBuyerButton';
 import {
   getImageUrl,
+  useTranslatedTexts,
   useAcceptBuyRequestOffer,
   useBuyRequestComments,
   useBuyRequestDetail,
@@ -49,6 +51,8 @@ import type { BuyRequestComment, BuyRequestOffer } from '@mobazha/core';
 function RequestDescription({ text }: { text: string }) {
   const { t } = useI18n();
   const [expanded, setExpanded] = useState(false);
+  const [translated] = useTranslatedTexts([text]);
+  const showingTranslation = Boolean(translated && translated !== text);
   const [overflowing, setOverflowing] = useState(false);
   const bodyRef = useRef<HTMLParagraphElement>(null);
 
@@ -65,13 +69,18 @@ function RequestDescription({ text }: { text: string }) {
 
   return (
     <div className="flex flex-col gap-1">
+      {showingTranslation && (
+        <p className="text-xs text-muted-foreground" title={t('common.machineTranslatedHint')}>
+          {t('common.machineTranslated')}
+        </p>
+      )}
       <p
         ref={bodyRef}
         className={`whitespace-pre-line text-sm leading-relaxed text-muted-foreground ${
           expanded ? '' : 'line-clamp-4 sm:line-clamp-none'
         }`}
       >
-        {text}
+        {translated || text}
       </p>
       {(overflowing || expanded) && (
         <button
@@ -98,14 +107,26 @@ export default function BuyRequestDetailPage() {
   const { t } = useI18n();
   const params = useParams<{ slug: string }>();
   const slug = typeof params?.slug === 'string' ? params.slug : '';
+  const searchParams = useSearchParams();
+  // A request is owned by one node and read everywhere else through that node,
+  // which travels in the link as `peer`. Without it this node answers for
+  // itself, which is what its own board links do.
+  const peer = searchParams?.get('peer')?.trim() ?? '';
   const { profile } = useUserStore();
 
-  const { request, offers, isLoading, error, refetch } = useBuyRequestDetail(slug || null);
+  const { request, offers, isLoading, error, refetch } = useBuyRequestDetail(slug || null, peer);
+  // The node that owns this request: the one named in the link, or — once the
+  // request has loaded — the buyer's node. A request found through the search
+  // index arrives this way, and everything that reads or changes it has to
+  // address that node rather than this one.
+  const owner = peer || request?.buyerID?.peerID || '';
   const acceptOffer = useAcceptBuyRequestOffer(slug);
   const cancelRequest = useCancelBuyRequest(slug);
   const [actionFailed, setActionFailed] = useState(false);
 
   const isBuyer = !!request && !!profile?.peerID && request.buyerID.peerID === profile.peerID;
+  const [title] = useTranslatedTexts([request?.title]);
+  const showingTranslation = Boolean(title && title !== request?.title);
   const isOpen = request?.status === OPEN_STATUS;
   const budget = request?.budget?.max;
 
@@ -159,7 +180,15 @@ export default function BuyRequestDetailPage() {
             <div className="flex flex-col gap-6">
               <div className="flex flex-col gap-3">
                 <div className="flex items-start justify-between gap-3">
-                  <h1 className="text-2xl font-bold break-words sm:text-3xl">{request.title}</h1>
+                  <h1 className="text-2xl font-bold break-words sm:text-3xl">{title || request.title}</h1>
+              {showingTranslation && (
+                <p
+                  className="text-xs text-muted-foreground"
+                  title={t('common.machineTranslatedHint')}
+                >
+                  {t('common.machineTranslated')}
+                </p>
+              )}
                   <BuyRequestStatusBadge status={request.status} />
                 </div>
                 {request.description && <RequestDescription text={request.description} />}
@@ -173,7 +202,7 @@ export default function BuyRequestDetailPage() {
                       <img
                         key={image.original + '-' + index}
                         src={src}
-                        alt={request.title}
+                        alt={title || request.title}
                         loading="lazy"
                         className="aspect-square w-full rounded-md border border-border object-cover"
                       />
@@ -291,7 +320,11 @@ export default function BuyRequestDetailPage() {
               </section>
 
               {!isBuyer && isOpen && (
-                <OfferForm slug={slug} acceptedCurrencies={request.acceptedCurrencies} />
+                <OfferForm
+                  slug={slug}
+                  peer={owner}
+                  acceptedCurrencies={request.acceptedCurrencies}
+                />
               )}
 
               {acceptedOfferIsMine && (
@@ -304,7 +337,11 @@ export default function BuyRequestDetailPage() {
                   </p>
                   <Button asChild className="self-start">
                     <Link
-                      href={`/listing/new?from=wanted&wanted=${encodeURIComponent(slug)}&offer=${encodeURIComponent(acceptedOffer.id)}`}
+                      href={
+                        `/listing/new?from=wanted&wanted=${encodeURIComponent(slug)}` +
+                        `&offer=${encodeURIComponent(acceptedOffer.id)}` +
+                        (owner ? `&peer=${encodeURIComponent(owner)}` : '')
+                      }
                     >
                       {t('wanted.createListing', {
                         defaultValue: 'Create a product from this offer',
@@ -314,7 +351,15 @@ export default function BuyRequestDetailPage() {
                 </div>
               )}
 
-              <CommentsSection slug={slug} canComment={isOpen || request.status === 'locked'} />
+              {isBuyer && !peer && (
+                <ShareRequestLink slug={slug} buyerPeerID={request.buyerID.peerID} />
+              )}
+
+              <CommentsSection
+                slug={slug}
+                peer={owner}
+                canComment={isOpen || request.status === 'locked'}
+              />
             </div>
           )}
         </Container>
@@ -384,9 +429,17 @@ function OfferRow({
   );
 }
 
-function OfferForm({ slug, acceptedCurrencies }: { slug: string; acceptedCurrencies: string[] }) {
+function OfferForm({
+  slug,
+  peer,
+  acceptedCurrencies,
+}: {
+  slug: string;
+  peer?: string;
+  acceptedCurrencies: string[];
+}) {
   const { t } = useI18n();
-  const createOffer = useCreateBuyRequestOffer(slug);
+  const createOffer = useCreateBuyRequestOffer(slug, peer);
   const [price, setPrice] = useState('');
   const [currency, setCurrency] = useState(acceptedCurrencies[0] ?? '');
   const [quantity, setQuantity] = useState('1');
@@ -531,10 +584,18 @@ function OfferForm({ slug, acceptedCurrencies }: { slug: string; acceptedCurrenc
   );
 }
 
-function CommentsSection({ slug, canComment }: { slug: string; canComment: boolean }) {
+function CommentsSection({
+  slug,
+  peer,
+  canComment,
+}: {
+  slug: string;
+  peer?: string;
+  canComment: boolean;
+}) {
   const { t } = useI18n();
-  const { comments, total, isLoading } = useBuyRequestComments(slug);
-  const createComment = useCreateBuyRequestComment(slug);
+  const { comments, total, isLoading } = useBuyRequestComments(slug, peer);
+  const createComment = useCreateBuyRequestComment(slug, peer);
 
   const [body, setBody] = useState('');
   const [replyTo, setReplyTo] = useState<BuyRequestComment | null>(null);
@@ -638,6 +699,51 @@ function CommentsSection({ slug, canComment }: { slug: string; canComment: boole
         </p>
       )}
     </section>
+  );
+}
+
+/**
+ * The link a buyer hands to sellers.
+ *
+ * The board is node-local, so a seller on another node reaches this request by
+ * naming the node that owns it. The buyer is the one who knows that link, so it
+ * is offered here rather than anywhere a seller could look it up.
+ *
+ * The origin is read when the link is built, not when the page is rendered, so
+ * the same line of code works before and after hydration.
+ */
+function shareRequestLink(slug: string, buyerPeerID: string): string {
+  const origin = typeof window !== 'undefined' ? window.location.origin : '';
+  return `${origin}/wanted/${encodeURIComponent(slug)}?peer=${encodeURIComponent(buyerPeerID)}`;
+}
+
+function ShareRequestLink({ slug, buyerPeerID }: { slug: string; buyerPeerID: string }) {
+  const { t } = useI18n();
+  const [copied, setCopied] = useState(false);
+
+  if (!buyerPeerID) return null;
+  const link = shareRequestLink(slug, buyerPeerID);
+
+  const copy = async () => {
+    // A denied clipboard leaves the link on screen, so it can still be
+    // copied by hand.
+    setCopied(await copyToClipboard(link));
+  };
+
+  return (
+    <div className="flex flex-col gap-2 rounded-lg border border-border p-4">
+      <p className="text-sm text-muted-foreground">
+        {t('wanted.shareLinkHint', {
+          defaultValue: 'Sellers on another node reach this request through this link.',
+        })}
+      </p>
+      <code className="break-all rounded bg-muted px-2 py-1 text-xs">{link}</code>
+      <Button variant="outline" className="self-start" onClick={copy}>
+        {copied
+          ? t('wanted.shareLinkCopied', { defaultValue: 'Link copied' })
+          : t('wanted.shareLink', { defaultValue: 'Copy link' })}
+      </Button>
+    </div>
   );
 }
 
